@@ -68,6 +68,7 @@ designated f v = f v `elem`[B,T]
 valid :: Expr -> Mapping -> Bool
 valid (Atom s)       m = maybe False (designated id) (lookup s m)
 valid (Neg (Atom s)) m = maybe False (designated inverse) (lookup s m)
+valid (Neg e)        m = not (valid e m)
 valid (AndT e e')    m = valid e m && valid e' m
 valid (OrT e e')     m = valid e m || valid e' m
 valid (Mat e e')     m = valid (OrT (Neg e) e') m
@@ -102,9 +103,22 @@ prettyPrint m = do
   mapM_ (putStr . (\x -> fst x ++ show (snd x) ++ " ")) (toList m)
   putStrLn ""
 
+prettyModel xs = concat (map (\x -> fst x ++ show (snd x) ++ " ") xs)
+prettyConcat ctx = map f $ zip [1..] $ map toList $ models ctx
+  where f = (\x -> show (fst x) ++ " " ++ (prettyModel $ snd x))
+
 --
 models ctx = filter (valid f) (assignments f)
   where f = andify ctx
+
+modelCount ctx = length . models $ ctx 
+
+kval N = 0 
+kval T = 1 
+kval F = 1 
+kval B = 2 
+kmodels ctx = undefined
+  where xs = models ctx
 --
 
 infix 1 |=
@@ -134,18 +148,22 @@ infix 1 %=>
 (%=>) :: Expr -> Expr -> Expr
 (%=>) = Sup
 
+(~) :: Expr -> Expr
+(~) = Neg
+
+
 
 a1 = Atom "fly(tweety)"
 a2 = Atom "bird(tweety)"
 a3 = Atom "penguin(tweety)"
 tweetyDilemma = [
-  Mat a2 a1,
-  Sup a3 a2,
-  Sup a3 (Neg a1),
+  a2 %-> a1,
+  a3 %=> a2,
+  a3 %=> (~) a1,
   a2,
   a3
   ]
-entailed4 = [Neg a1, a2, a3]
+entailed4 = [(~) a1, a2, a3]
 
 a4 = Atom "quaker(Nixon)"
 a5 = Atom "republican(Nixon)"
@@ -161,12 +179,6 @@ nixonDiamond = [
   ]
 t1 = nixonDiamond |= [Neg (Atom "hawk(Nixon)") % Neg (Atom "dove(Nixon)")]
 
-
-
---ctxtw = AndT (AndT (AndT (AndT a2 a3) twf1) twf2) twf3
---xstw = assignments ctxtw
---satstw = filter (valid ctxtw) xstw
-
 a = Atom "a"
 b = Atom "b"
 c = Atom "c"
@@ -179,61 +191,8 @@ sats = filter (valid ctx) xs
 xs' = assignments (Neg ctx)
 sats' = filter (valid (Neg ctx)) xs'
 
-
--- parser
-parseExpr :: SourceName -> String -> Either ParseError Expr
-parseExpr = parse statement
-
-statement :: GenParser Char st Expr
-statement = do spaces
-               x <- try binary <|> expr
-               spaces
-               eof
-               return x
-
-expr :: GenParser Char st Expr
-expr = choice [binaryP, negation, variable]
-
-              
-variable :: GenParser Char st Expr
-variable = do c <- letter
-              return $ Atom [c]
-
-negation :: GenParser Char st Expr
-negation = do char '-'
-              spaces
-              Neg <$> expr
-
-binaryP :: GenParser Char st Expr
-binaryP = do char '('
-             spaces
-             x <- binary
-             spaces
-             char ')'
-             return x
-
-binary :: GenParser Char st Expr
-binary = do x1 <- expr
-            spaces
-            s  <- choice $ map string ["&", "|", "->", ">>", "=>"]
-            spaces
-            x2 <- expr
-            return $ connective s x1 x2
-  where
-    connective c = case c of
-      "&"   -> AndT
-      "|"   -> OrT
-      "->"  -> Mat
-      ">>"  -> Imp
-      "=>"  -> Sup
-      _     -> error "Impossible case"
-
 split :: String -> [String]
 split [] = [""]
 split (c:cs) | c == ';'  = "" : rest
              | otherwise = (c : head rest) : tail rest
     where rest = split cs
-
-solve ctx = do 
-  putStrLn <$> readFile "test.four"
-  mapM_ prettyPrint $ models ctx

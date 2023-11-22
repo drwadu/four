@@ -1,5 +1,0 @@
-bird(tweety);
-penguin(tweety);
-bird(tweety) -> fly(tweety);
-penguin(tweety) => bird(tweety);
-penguin(tweety) => -fly(tweety);

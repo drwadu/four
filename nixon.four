@@ -1,0 +1,7 @@
+quaker0Nixon0
+republican0Nixon0
+quaker0Nixon0     -> dove0Nixon0
+republican0Nixon0 -> hawk0Nixon0
+dove0Nixon0       => ~hawk0Nixon0
+hawk0Nixon0       => ~dove0Nixon0
+dove0Nixon0       | hawk0Nixon0
