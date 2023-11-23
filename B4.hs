@@ -69,6 +69,7 @@ form =
       where next = roundBrackets expr <|> atom <|> top <|> bot <|> neg
 
 main :: IO ()
+--main = interact (unlines . prettyConcatK . (map gives) . lines)
 main = interact (unlines . prettyConcat . (map gives) . lines)
 --main = interact (unlines . (map (show . gives)) . lines)
 --main = interact (unlines $ prettyConcat $ models $ (map gives) $ lines)

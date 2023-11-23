@@ -23,3 +23,4 @@ cabal.project.local~
 .ghc.environment.*
 /misc
 B4
+B4k

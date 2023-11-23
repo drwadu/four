@@ -106,6 +106,8 @@ prettyPrint m = do
 prettyModel xs = concat (map (\x -> fst x ++ show (snd x) ++ " ") xs)
 prettyConcat ctx = map f $ zip [1..] $ map toList $ models ctx
   where f = (\x -> show (fst x) ++ " " ++ (prettyModel $ snd x))
+prettyConcatK ctx = map f $ zip [1..] $ map toList $ kmodels ctx
+  where f = (\x -> show (fst x) ++ " " ++ (prettyModel $ snd x))
 
 --
 models ctx = filter (valid f) (assignments f)
@@ -117,8 +119,15 @@ kval N = 0
 kval T = 1 
 kval F = 1 
 kval B = 2 
-kmodels ctx = undefined
-  where xs = models ctx
+
+kval' m = sum $ map (\x -> kval $ snd x) $ toList m
+
+kmodels ctx = 
+  let 
+    xs = map (\x -> (kval' x, x)) $ models ctx
+    v  = foldr1 min $ map fst $ xs
+  in 
+    map snd $ filter (\x -> (fst x) == v) $ xs
 --
 
 infix 1 |=

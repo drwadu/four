@@ -1,0 +1,3 @@
+~hire
+(female & nonBinary) => reject
+male                 => hire
