@@ -64,6 +64,7 @@ form =
   buildExpressionParser [ [Infix (op "&" >> return AndT) AssocLeft] 
     , [Infix (op "|" >> return OrT) AssocLeft] 
     , [Infix (op "->" >> return Mat) AssocLeft] 
+    , [Infix (op ">>" >> return Imp) AssocLeft] 
     , [Infix (op "=>" >> return Sup) AssocLeft] ] next 
       where next = roundBrackets expr <|> atom <|> top <|> bot <|> neg
 

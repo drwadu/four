@@ -63,7 +63,7 @@ instance Show Expr where
 type Mapping = Map Sym Val
 
 designated :: (Val -> Val) -> Val -> Bool 
-designated f v = f v `elem`[B,T]
+designated f v = f v `elem` [B,T]
 
 valid :: Expr -> Mapping -> Bool
 valid (Atom s)       m = maybe False (designated id) (lookup s m)
@@ -150,49 +150,3 @@ infix 1 %=>
 
 (~) :: Expr -> Expr
 (~) = Neg
-
-
-
-a1 = Atom "fly(tweety)"
-a2 = Atom "bird(tweety)"
-a3 = Atom "penguin(tweety)"
-tweetyDilemma = [
-  a2 %-> a1,
-  a3 %=> a2,
-  a3 %=> (~) a1,
-  a2,
-  a3
-  ]
-entailed4 = [(~) a1, a2, a3]
-
-a4 = Atom "quaker(Nixon)"
-a5 = Atom "republican(Nixon)"
-a6 = Atom "dove(Nixon)"
-a7 = Atom "hawk(Nixon)"
-nixonDiamond = [
-  a4, a5,
-  a4 %-> a6,
-  a5 %-> a7,
-  a6 %=> Neg a7,
-  a7 %=> Neg a6,
-  a7 % a6
-  ]
-t1 = nixonDiamond |= [Neg (Atom "hawk(Nixon)") % Neg (Atom "dove(Nixon)")]
-
-a = Atom "a"
-b = Atom "b"
-c = Atom "c"
-f1 = AndT a b
-f2 = OrT (Neg c) f1
-ctx = AndT f1 f2
-xs = assignments ctx
-
-sats = filter (valid ctx) xs
-xs' = assignments (Neg ctx)
-sats' = filter (valid (Neg ctx)) xs'
-
-split :: String -> [String]
-split [] = [""]
-split (c:cs) | c == ';'  = "" : rest
-             | otherwise = (c : head rest) : tail rest
-    where rest = split cs
