@@ -1,9 +1,12 @@
-import Four
+import Four ( Expr(..), prettyConcat )
 
-import System.IO
+import System.IO ()
 import Text.ParserCombinators.Parsec
+    ( alphaNum, letter, oneOf, (<|>), parse, Parser )
 import Text.ParserCombinators.Parsec.Expr
+    ( buildExpressionParser, Assoc(AssocLeft), Operator(Infix) )
 import Text.ParserCombinators.Parsec.Language
+    ( emptyDef, LanguageDef )
 import qualified Text.ParserCombinators.Parsec.Token as Token
 
 gives :: String -> Expr
@@ -28,7 +31,7 @@ lang = emptyDef{ Token.identStart      = letter
                , Token.opStart         = oneOf "&|-="
                , Token.opLetter        = oneOf "&|-="
                , Token.reservedOpNames = ["~"]
-               , Token.reservedNames   = ["T","F"]
+               , Token.reservedNames   = ["T", "F"]
                , Token.commentLine     = "%"
                }
 
@@ -46,14 +49,11 @@ exprParser = whiteSpace >> expr
 expr :: Parser Expr
 expr = form <|> atom 
 
-atom = do
-  s <- identifier 
-  return $ Atom s
+atom = do Atom <$> identifier
 
 neg = do
   op "~"
-  e <- ft
-  return $ Neg e
+  Neg <$> ft
 
 top = keyword "T" >> return Top
 bot = keyword "F" >> return Bot
@@ -69,8 +69,4 @@ form =
       where next = roundBrackets expr <|> atom <|> top <|> bot <|> neg
 
 main :: IO ()
---main = interact (unlines . prettyConcatK . (map gives) . lines)
-main = interact (unlines . prettyConcat . (map gives) . lines)
---main = interact (unlines . (map (show . gives)) . lines)
---main = interact (unlines $ prettyConcat $ models $ (map gives) $ lines)
---main = interact (unlines . (map givesText) . lines)
+main = interact (unlines . prettyConcat . map gives . lines)
