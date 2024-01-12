@@ -110,24 +110,12 @@ prettyConcatK ctx = map f $ zip [1..] $ map toList $ kmodels ctx
   where f = (\x -> show (fst x) ++ " " ++ (prettyModel $ snd x))
 
 --
+
 models ctx = filter (valid f) (assignments f)
   where f = andify ctx
 
 modelCount ctx = length . models $ ctx 
 
-kval N = 0 
-kval T = 1 
-kval F = 1 
-kval B = 2 
-
-kval' m = sum $ map (\x -> kval $ snd x) $ toList m
-
-kmodels ctx = 
-  let 
-    xs = map (\x -> (kval' x, x)) $ models ctx
-    v  = foldr1 min $ map fst $ xs
-  in 
-    map snd $ filter (\x -> (fst x) == v) $ xs
 --
 
 infix 1 |=
